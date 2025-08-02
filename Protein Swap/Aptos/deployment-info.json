@@ -1,0 +1,11 @@
+{
+  "network": "testnet",
+  "accountAddress": "0x628211229e8410b08ff89a9fbb2487b8192345adc97d0bc8d4416bb62d591c59",
+  "objectAddress": "unknown",
+  "transactionHash": "unknown",
+  "deployedAt": "2025-07-21T00:10:21.360Z",
+  "modules": [
+    "0x628211229e8410b08ff89a9fbb2487b8192345adc97d0bc8d4416bb62d591c59::mock_token",
+    "0x628211229e8410b08ff89a9fbb2487b8192345adc97d0bc8d4416bb62d591c59::atomic_swap"
+  ]
+}

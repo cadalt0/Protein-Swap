@@ -23,9 +23,6 @@ async function main() {
     throw new Error("UNITE_TOKEN_ADDRESS environment variable is required. Please set it before running the script.");
   }
 
-  // Target address to mint tokens to
-  const targetAddress = "0xd61cbe5f41234c74e770757cd029a26eaf086b7b";
-
   console.log(`\n🪙 MINTING UNITE TOKENS ON BASE SEPOLIA`);
   console.log(`📡 Using RPC: ${rpcUrl}\n`);
 
@@ -33,9 +30,12 @@ async function main() {
   const provider = new ethers.JsonRpcProvider(rpcUrl);
   const wallet = new ethers.Wallet(privateKey, provider);
 
-  console.log(`👤 Minter address: ${wallet.address}`);
-  console.log(`💰 Minter balance: ${ethers.formatEther(await provider.getBalance(wallet.address))} ETH`);
-  console.log(`🎯 Target address: ${targetAddress}`);
+  // Target address to mint tokens to (caller's address)
+  const targetAddress = wallet.address;
+
+  console.log(`👤 Caller address: ${wallet.address}`);
+  console.log(`💰 Caller balance: ${ethers.formatEther(await provider.getBalance(wallet.address))} ETH`);
+  console.log(`🎯 Minting to: ${targetAddress} (caller's address)`);
   console.log(`🪙 Token contract: ${uniteTokenAddress}\n`);
 
   try {

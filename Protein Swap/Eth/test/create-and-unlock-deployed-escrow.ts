@@ -11,6 +11,12 @@ async function main() {
     throw new Error("PRIVATE_KEY environment variable is required. Please set it before running the script.");
   }
 
+  // Check if taker private key is provided
+  const takerPrivateKey = process.env.TAKER_PRIVATE_KEY;
+  if (!takerPrivateKey) {
+    throw new Error("TAKER_PRIVATE_KEY environment variable is required. Please set it before running the script.");
+  }
+
   // Get RPC URL from environment variables
   const rpcUrl = process.env.RPC_URL;
   if (!rpcUrl) {
@@ -20,12 +26,15 @@ async function main() {
   console.log(`\n🔄 Creating and Unlocking Escrow on BASE SEPOLIA`);
   console.log(`📡 Using RPC: ${rpcUrl}\n`);
 
-  // Create provider and wallet
+  // Create provider and wallets
   const provider = new ethers.JsonRpcProvider(rpcUrl);
-  const wallet = new ethers.Wallet(privateKey, provider);
+  const ownerWallet = new ethers.Wallet(privateKey, provider);
+  const takerWallet = new ethers.Wallet(takerPrivateKey, provider);
 
-  console.log(`👤 User address: ${wallet.address}`);
-  console.log(`💰 Balance: ${ethers.formatEther(await provider.getBalance(wallet.address))} ETH\n`);
+  console.log(`👤 Owner address: ${ownerWallet.address}`);
+  console.log(`💰 Owner balance: ${ethers.formatEther(await provider.getBalance(ownerWallet.address))} ETH`);
+  console.log(`👤 Taker address: ${takerWallet.address}`);
+  console.log(`💰 Taker balance: ${ethers.formatEther(await provider.getBalance(takerWallet.address))} ETH\n`);
 
   // --- DEPLOYED CONTRACT ADDRESSES ---
   const UNITE_TOKEN_ADDRESS = process.env.UNITE_TOKEN_ADDRESS;
@@ -43,6 +52,11 @@ async function main() {
   if (!taker) {
     throw new Error("TAKER_ADDRESS environment variable is required. Please set it before running the script.");
   }
+
+  // Verify that the taker private key matches the taker address
+  if (takerWallet.address.toLowerCase() !== taker.toLowerCase()) {
+    throw new Error(`TAKER_PRIVATE_KEY does not match TAKER_ADDRESS. Expected: ${taker}, Got: ${takerWallet.address}`);
+  }
   const orderId = `order_${Date.now()}`; // Unique order ID
   const amount = ethers.parseUnits("100", 18); // 100 UNITE tokens
   const timelockDuration = 3600; // 1 hour
@@ -51,7 +65,7 @@ async function main() {
   console.log(`   Order ID: ${orderId}`);
   console.log(`   Token: ${UNITE_TOKEN_ADDRESS}`);
   console.log(`   Escrow Contract: ${ESCROW_ADDRESS}`);
-  console.log(`   Owner: ${wallet.address}`);
+  console.log(`   Owner: ${ownerWallet.address}`);
   console.log(`   Taker: ${taker}`);
   console.log(`   Amount: ${ethers.formatUnits(amount, 18)} UNITE`);
   console.log(`   Timelock: ${timelockDuration} seconds (1 hour)\n`);
@@ -73,10 +87,10 @@ async function main() {
       "function balanceOf(address account) external view returns (uint256)",
       "function allowance(address owner, address spender) external view returns (uint256)"
     ];
-    const unite = new ethers.Contract(UNITE_TOKEN_ADDRESS, uniteAbi, wallet);
+    const unite = new ethers.Contract(UNITE_TOKEN_ADDRESS, uniteAbi, ownerWallet);
 
     // Check current balance
-    const balance = await unite.balanceOf(wallet.address);
+    const balance = await unite.balanceOf(ownerWallet.address);
     const formattedBalance = ethers.formatUnits(balance, 18);
     console.log(`💰 Current UNITE balance: ${formattedBalance} UNITE`);
 
@@ -92,7 +106,7 @@ async function main() {
     console.log(`🔗 Approval tx: https://sepolia.basescan.org/tx/${approveReceipt?.hash}`);
 
     // Check allowance
-    const allowance = await unite.allowance(wallet.address, ESCROW_ADDRESS);
+    const allowance = await unite.allowance(ownerWallet.address, ESCROW_ADDRESS);
     console.log(`✅ Allowance set: ${ethers.formatUnits(allowance, 18)} UNITE`);
 
     // 4. Create escrow
@@ -104,11 +118,11 @@ async function main() {
       "function isEscrowActive(string memory orderId, address owner) external view returns (bool)"
     ];
     
-    const escrow = new ethers.Contract(ESCROW_ADDRESS, escrowAbi, wallet);
+    const escrow = new ethers.Contract(ESCROW_ADDRESS, escrowAbi, ownerWallet);
     
     const createTx = await escrow.createEscrow(
       orderId,
-      wallet.address,
+      ownerWallet.address,
       hash,
       taker,
       UNITE_TOKEN_ADDRESS,
@@ -120,11 +134,11 @@ async function main() {
     console.log(`🔗 Create tx: https://sepolia.basescan.org/tx/${createReceipt?.hash}`);
 
     // 5. Verify escrow exists and is active
-    const isActive = await escrow.isEscrowActive(orderId, wallet.address);
+    const isActive = await escrow.isEscrowActive(orderId, ownerWallet.address);
     console.log(`✅ Escrow is active: ${isActive}`);
 
     // Get escrow details
-    const escrowDetails = await escrow.getEscrow(orderId, wallet.address);
+    const escrowDetails = await escrow.getEscrow(orderId, ownerWallet.address);
     console.log(`📋 Escrow details:`);
     console.log(`   Order ID: ${escrowDetails[0]}`);
     console.log(`   Hash: ${escrowDetails[1]}`);
@@ -138,21 +152,26 @@ async function main() {
     console.log(`\n⏳ Waiting 5 seconds before unlocking...`);
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
-    // 7. Reveal secret to unlock escrow
-    console.log(`\n🔓 Revealing secret to unlock escrow...`);
-    const revealTx = await escrow.revealSecret(orderId, wallet.address, secret);
+    // 7. Reveal secret to unlock escrow (using taker's wallet)
+    console.log(`\n🔓 Revealing secret to unlock escrow using taker's wallet...`);
+    const escrowForTaker = new ethers.Contract(ESCROW_ADDRESS, escrowAbi, takerWallet);
+    const revealTx = await escrowForTaker.revealSecret(orderId, ownerWallet.address, secret);
     const revealReceipt = await revealTx.wait();
-    console.log(`✅ Escrow unlocked successfully!`);
+    console.log(`✅ Escrow unlocked successfully by taker!`);
     console.log(`🔗 Unlock tx: https://sepolia.basescan.org/tx/${revealReceipt?.hash}`);
 
     // 8. Verify escrow completion
-    const isStillActive = await escrow.isEscrowActive(orderId, wallet.address);
+    const isStillActive = await escrow.isEscrowActive(orderId, ownerWallet.address);
     console.log(`✅ Escrow is now inactive: ${!isStillActive}`);
 
-    // Check final balance
-    const finalBalance = await unite.balanceOf(wallet.address);
-    const finalFormattedBalance = ethers.formatUnits(finalBalance, 18);
-    console.log(`💰 Final UNITE balance: ${finalFormattedBalance} UNITE`);
+    // Check final balances
+    const finalOwnerBalance = await unite.balanceOf(ownerWallet.address);
+    const finalOwnerFormattedBalance = ethers.formatUnits(finalOwnerBalance, 18);
+    console.log(`💰 Final Owner UNITE balance: ${finalOwnerFormattedBalance} UNITE`);
+    
+    const finalTakerBalance = await unite.balanceOf(takerWallet.address);
+    const finalTakerFormattedBalance = ethers.formatUnits(finalTakerBalance, 18);
+    console.log(`💰 Final Taker UNITE balance: ${finalTakerFormattedBalance} UNITE`);
 
     // Print summary
     console.log("\n" + "=".repeat(60));
@@ -161,8 +180,10 @@ async function main() {
     console.log(`📋 Summary:`);
     console.log(`   Order ID: ${orderId}`);
     console.log(`   Amount: ${ethers.formatUnits(amount, 18)} UNITE`);
+    console.log(`   Owner: ${ownerWallet.address}`);
+    console.log(`   Taker: ${takerWallet.address}`);
     console.log(`   Secret: "${secretString}"`);
-    console.log(`   Status: Completed ✅`);
+    console.log(`   Status: Completed ✅ (Unlocked by Taker)`);
     console.log(`\n🔗 Transaction Links:`);
     console.log(`   Approval: https://sepolia.basescan.org/tx/${approveReceipt?.hash}`);
     console.log(`   Create Escrow: https://sepolia.basescan.org/tx/${createReceipt?.hash}`);

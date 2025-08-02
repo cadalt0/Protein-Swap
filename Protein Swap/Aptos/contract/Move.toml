@@ -1,0 +1,12 @@
+[package]
+name = "v3FusionSwap"
+version = "2.0.0"
+authors = []
+
+[addresses]
+fusion_swap_addr = "0x628211229e8410b08ff89a9fbb2487b8192345adc97d0bc8d4416bb62d591c59"
+
+[dependencies]
+AptosFramework = { git = "https://github.com/aptos-labs/aptos-framework.git", rev = "mainnet", subdir = "aptos-framework" }
+
+[dev-dependencies]
