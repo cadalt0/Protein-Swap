@@ -1,4 +1,3 @@
-                                                                                 ![Project Banner](https://i.ibb.co/1GdrxJCR/yourimagename.png)
 
 # 🧬 Protein Swap - Multi-Chain Atomic Swap Ecosystem
                                                              
