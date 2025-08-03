@@ -1,0 +1,1 @@
+/mnt/d/1inch\ Final/Protein\ Swap/Near/token-contract/target/wasm32-unknown-unknown/release/v1tokens.wasm: /mnt/d/1inch\ Final/Protein\ Swap/Near/token-contract/src/lib.rs /mnt/d/1inch\ Final/Protein\ Swap/Near/token-contract/target/near/v1tokens_abi.zst

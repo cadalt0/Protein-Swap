@@ -1,0 +1,39 @@
+{
+  "name": "near-token-deployer",
+  "version": "1.0.0",
+  "description": "Deploy UNITE token and escrow contracts to NEAR testnet",
+  "main": "deploy-token.js",
+  "scripts": {
+    "deploy:token": "node deploy-token.js",
+    "deploy:escrow": "node deploy-escrow.js",
+    "deploy:token:env": "node Token-Contract/script/deploy-token-env.js",
+    "deploy:escrow:env": "node Escrow-Contract/script/deploy.js",
+    "mint": "node Token-Contract/script/mint.js",
+    "transfer": "node transfer-tokens.js",
+    "demo:escrow": "node escrow-demo.js",
+    "build:token": "cd Token-Contract && cargo near build non-reproducible-wasm",
+    "build:escrow": "cd Escrow-Contract && cargo near build non-reproducible-wasm",
+    "build": "npm run build:token && npm run build:escrow",
+    "install:deps": "npm install",
+    "setup": "npm run install:deps && npm run build"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "near-api-js": "^2.1.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "near",
+    "blockchain",
+    "deployment",
+    "token",
+    "escrow"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
