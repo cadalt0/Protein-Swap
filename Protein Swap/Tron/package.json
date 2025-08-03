@@ -1,0 +1,25 @@
+{
+  "name": "unite-v1-minting",
+  "version": "1.0.0",
+  "description": "Script to mint UNITE V1 tokens",
+  "main": "mint_tokens.js",
+  "scripts": {
+    "mint": "node mint_tokens.js",
+    "mint-env": "node script/mint.js",
+    "atomic-swap": "node atomic_swap_test.js",
+    "escrow": "node script/escrow.js",
+    "install-deps": "npm install"
+  },
+  "dependencies": {
+    "tronweb": "^5.3.0",
+    "dotenv": "^16.3.1"
+  },
+  "keywords": [
+    "tron",
+    "token",
+    "mint",
+    "blockchain"
+  ],
+  "author": "",
+  "license": "MIT"
+} 
