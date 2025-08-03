@@ -1,0 +1,21 @@
+[package]
+name = "atomic_swap_escrow"
+version = "1.0.0"
+edition = "2024.beta"
+
+[dependencies]
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/mainnet" }
+
+[addresses]
+escrow = "0x0"
+token = "0x0"
+unite_v1 = "0x0"
+
+
+[dev-dependencies]
+
+[dev-addresses]
+
+# For testing on different networks, you can override addresses:
+# sui move build --override-deps Sui=framework/testnet
+# sui move build --override-deps Sui=framework/devnet

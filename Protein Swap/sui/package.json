@@ -1,0 +1,18 @@
+{
+  "scripts": {
+    "mint": "node script/mint.js",
+    "test:escrow": "node tests/escrow-demo.js"
+    
+  },
+  "dependencies": {
+    "@mysten/sui.js": "^0.54.1",
+    "bech32": "^2.0.0",
+    "bs58": "^6.0.0",
+    "dotenv": "^16.3.1",
+    "js-sha3": "^0.9.3"
+  },
+  "devDependencies": {
+    "@mysten/sui.js": "^0.38.0",
+    "ts-node": "^10.9.1"
+  }
+}
