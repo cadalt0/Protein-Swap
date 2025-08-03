@@ -1,6 +1,6 @@
 # 🧬 Protein Swap - Multi-Chain Atomic Swap Ecosystem
 
-![Protein Swap](https://ibb.co/1GdrxJCR)
+ <img width="2048" height="2048" alt="image" src="https://github.com/user-attachments/assets/a13fd76c-f66f-4c07-a331-834b6abfb574" />
 
 A comprehensive atomic swap implementation across **8 major blockchain platforms** with cross-chain testing capabilities. This project demonstrates secure, trustless token exchanges using Hash Time-Locked Contracts (HTLC) across different blockchain ecosystems.
 
